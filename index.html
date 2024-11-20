@@ -1,0 +1,200 @@
+<!DOCTYPE html>
+<html lang="pt">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Palavras Difíceis</title>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/5.15.4/css/all.min.css">
+    <style>
+        .App {
+            font-family: Arial, sans-serif;
+            /* text-align: center; */
+            margin-top: 20px;
+        }
+
+        .word-container {
+            margin: 20px;
+            padding: 15px;
+            border: 1px solid #ccc;
+            border-radius: 8px;
+            background-color: #f9f9f9;
+        }
+
+        .audio-button {
+            background-color: #4CAF50;
+            color: white;
+            border: none;
+            padding: 10px;
+            display: inline-table;
+            cursor: pointer;
+            border-radius: 50%;
+            width: 20px;
+            height: 20px;
+            text-align: center;
+            margin-right: 5px;
+        }
+
+        .audio-button.blue {
+            background-color: #2196F3;
+        }
+
+        .audio-button.red {
+            background-color: #F44336;
+        }
+
+        .audio-button.purple {
+            background-color: #9C27B0;
+        }
+
+        .audio-button.black {
+            background-color: #000000;
+        }   
+
+        .audio-button i {
+            font-size: 16px;
+        }
+
+        .audio-button:hover {
+            /* background-color: #45a049; */
+        }
+    </style>
+</head>
+
+<body ng-app="wordApp" ng-controller="wordController">
+    <div class="App">
+        <h1>Palavras Difíceis {{words.length}}</h1>
+        <div id="words-container">
+            <div class="word-container" ng-repeat="word in words">
+                <h3>
+                    {{ word.word }}
+                    <span class="audio-button" ng-click="playAudio(word.word)">
+                        <i class="fas fa-play"></i>
+                    </span>
+                    <span class="audio-button blue" ng-click="playAudio(word.example_en)">
+                        <i class="fas fa-play"></i>
+                    </span>
+                    <span class="audio-button red" ng-click="playAudio(word.word, word.example_en)">
+                        <i class="fas fa-play"></i>
+                    </span>
+                    <span class="audio-button purple" ng-click="playAudioPortugues(word.translation, word.example_pt)">
+                        <i class="fas fa-play"></i>
+                    </span>
+                    <span class="audio-button black" ng-click="playAudioCompleto(word.word, word.example_en, word.translation, word.example_pt)">
+                        <i class="fas fa-play"></i>
+                    </span>
+                </h3>
+                <p><strong>Tradução:</strong> {{ word.translation }}</p>
+                <p><strong>IPA:</strong> {{ word.ipa }}</p>
+                <p>
+                    <strong>Exemplo em Inglês:</strong> {{ word.example_en }}
+                    <!-- <span class="audio-button blue" ng-click="playAudio(word.example_en)">
+                        <i class="fas fa-play"></i>
+                    </span> -->
+                </p>
+                <p><strong>Exemplo em Português:</strong> {{ word.example_pt }}</p>
+                <p><strong>Raiz:</strong> {{ word.root }}</p>
+                <p>
+                    <!-- <span class="audio-button red" ng-click="playAudio(word.word, word.example_en)">
+                        <i class="fas fa-play"></i>
+                    </span> -->
+                </p>
+            </div>
+        </div>
+    </div>
+
+    <script src="https://code.angularjs.org/1.8.2/angular.min.js"></script>
+    <script>
+        // Definindo o módulo e o controlador do AngularJS
+        angular.module('wordApp', [])
+            .controller('wordController', function ($scope) {
+
+                $scope.words = [];
+
+                // Função para carregar o JSON
+                function loadJSON() {
+                    fetch('data.json')
+                        .then(response => response.json()) // Converte a resposta para JSON
+                        .then(data => {
+                            $scope.words = data;
+                            console.log($scope.words.length);
+                            $scope.$apply();
+                        })
+                        .catch(error => console.error('Erro ao carregar o JSON:', error));
+                }
+
+                loadJSON();
+
+                // Função para reproduzir o áudio
+                $scope.playAudio = function (text1, text2) {
+                    const audio1 = new SpeechSynthesisUtterance(text1);
+                    const audio2 = new SpeechSynthesisUtterance(text2);
+
+                    // Aguardar o término do primeiro áudio antes de falar o segundo
+                    audio1.onend = function() {
+                        // Pausa de 1 segundo entre os textos (ajuste o tempo conforme necessário)
+                        setTimeout(function() {
+                            speechSynthesis.speak(audio2);
+                        }, 1000); // Pausa de 1 segundo (1000 milissegundos)
+                    };
+
+                    // Inicia a fala do primeiro texto
+                    speechSynthesis.speak(audio1);
+                };
+
+                $scope.playAudioPortugues = function (text1, text2) {
+                    const audio1 = new SpeechSynthesisUtterance(text1);
+                    const audio2 = new SpeechSynthesisUtterance(text2);
+                    
+                    audio1.lang = 'pt-BR';  // Para português do Brasil
+                    audio2.lang = 'pt-BR';  // Para português do Brasil
+
+                    // Aguardar o término do primeiro áudio antes de falar o segundo
+                    audio1.onend = function() {
+                        // Pausa de 1 segundo entre os textos (ajuste o tempo conforme necessário)
+                        setTimeout(function() {
+                            speechSynthesis.speak(audio2);
+                        }, 1000); // Pausa de 1 segundo (1000 milissegundos)
+                    };
+
+                    // Inicia a fala do primeiro texto
+                    speechSynthesis.speak(audio1);
+                };
+
+                $scope.playAudioCompleto = function (text1, text2, text3, text4) {
+                    const audio1 = new SpeechSynthesisUtterance(text1);
+                    const audio2 = new SpeechSynthesisUtterance(text2);
+
+                    // Aguardar o término do primeiro áudio antes de falar o segundo
+                    audio1.onend = function() {
+                        // Pausa de 1 segundo entre os textos (ajuste o tempo conforme necessário)
+                        setTimeout(function() {
+                            speechSynthesis.speak(audio2);
+                        }, 1000); // Pausa de 1 segundo (1000 milissegundos)
+                    };
+
+                    // Inicia a fala do primeiro texto
+                    speechSynthesis.speak(audio1);
+                   
+                    const audio3 = new SpeechSynthesisUtterance(text3);
+                    const audio4 = new SpeechSynthesisUtterance(text4);
+                    
+                    audio3.lang = 'pt-BR';  // Para português do Brasil
+                    audio4.lang = 'pt-BR';  // Para português do Brasil
+
+                    // Aguardar o término do primeiro áudio antes de falar o segundo
+                    audio3.onend = function() {
+                        // Pausa de 1 segundo entre os textos (ajuste o tempo conforme necessário)
+                        setTimeout(function() {
+                            speechSynthesis.speak(audio4);
+                        }, 1000); // Pausa de 1 segundo (1000 milissegundos)
+                    };
+
+                    // Inicia a fala do primeiro texto
+                    speechSynthesis.speak(audio3);
+                };
+            });
+    </script>
+</body>
+
+</html>
